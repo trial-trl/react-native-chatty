@@ -1,6 +1,6 @@
 import BottomSheet from '@gorhom/bottom-sheet';
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
-import { ActionSheetIOS, Platform, Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import { PropsContext } from '../Chatty';
 import type { IMessage } from '../types/Chatty.types';
 import { contextMenuView } from '../utils/contextMenu';
@@ -22,31 +22,6 @@ function ContextMenuWrapper(props: IProps) {
     },
     [props.message]
   );
-
-  const onLongPress = useCallback(() => {
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: [
-            ...(propsContext.bubbleProps?.actions?.options.map(
-              (_) => _.title
-            ) as string[]),
-            propsContext.bubbleProps?.actions?.cancelButtonLabel ?? 'Close',
-          ],
-          cancelButtonIndex: propsContext.bubbleProps?.actions?.options.length,
-          destructiveButtonIndex:
-            propsContext.bubbleProps?.actions?.options.findIndex(
-              (_) => _.destructive
-            ) || -1,
-        },
-        onPress
-      );
-    }
-  }, [
-    onPress,
-    propsContext.bubbleProps?.actions?.cancelButtonLabel,
-    propsContext.bubbleProps?.actions?.options,
-  ]);
 
   const onChange = useCallback(() => {}, []);
 
