@@ -1,11 +1,13 @@
 import type {
   ImageSourcePropType,
+  StyleProp,
   TextStyle,
   TouchableOpacityProps,
   ViewStyle,
 } from 'react-native';
 import type { ContextMenuAction } from 'react-native-context-menu-view';
 import type { FlashListProps } from '@shopify/flash-list';
+import Animated from 'react-native-reanimated';
 
 export interface IUser {
   id: number;
@@ -110,7 +112,7 @@ export interface IFooterProps extends Pick<IChatty, 'replyingTo'> {
     usernameStyle?: TextStyle;
   };
   mentionStyles?: {
-    containerStyle?: ViewStyle;
+    containerStyle?: StyleProp<Animated.AnimateStyle<StyleProp<ViewStyle>>>;
     labelStyle?: TextStyle;
   };
   renderImageAction?: (props: { onPressImage: () => void }) => JSX.Element;

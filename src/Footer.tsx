@@ -122,14 +122,14 @@ function _Footer(props: IFooterProps) {
 
   const onPressImage = useCallback(async () => {
     selectImage().then((r) => {
-      if (r.cancelled) {
+      if (r.canceled) {
         return;
       }
 
       const assets = {
         type: MediaType.Image,
-        uri: r.uri,
-        base64: r.base64,
+        uri: r.assets[0].uri ?? undefined,
+        base64: r.assets[0].base64 ?? undefined,
       };
       if (image) {
         setImage([...image, assets]);
