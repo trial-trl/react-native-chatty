@@ -8,7 +8,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  Dimensions,
   Image,
   ImageBackground,
   InteractionManager,
@@ -17,6 +16,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  useWindowDimensions,
 } from 'react-native';
 import { PropsContext } from './Chatty';
 import { PhotoView } from './components/PhotoView';
@@ -47,6 +47,7 @@ const ParsedText = loadParsedText();
 function _ChatBubble(props: IChatBubble) {
   const { message, children } = props;
   const propsContext = useContext(PropsContext);
+  const { width } = useWindowDimensions();
   const [mediaLoaded, setMediaLoaded] = useState<boolean>(false);
   const [showMedia, setShowMedia] = useState<boolean>(false);
   const [showUrlPreview, setShowUrlPreview] = useState(false);
@@ -68,13 +69,13 @@ function _ChatBubble(props: IChatBubble) {
       if (message?.me) {
         return {
           backgroundColor:
-            propsContext?.bubbleProps?.selfBubbleColor ?? '#afddfa',
+            propsContext?.bubbleProps?.selfBubbleColor ?? '#c8faaf',
           ...propsContext.bubbleProps.containerStyle,
         };
       } else {
         return {
           backgroundColor:
-            propsContext?.bubbleProps?.otherBubbleColor ?? '#c8faaf',
+            propsContext?.bubbleProps?.otherBubbleColor ?? '#afddfa',
 
           ...propsContext.bubbleProps.containerStyle,
         };
@@ -84,12 +85,12 @@ function _ChatBubble(props: IChatBubble) {
     if (message?.me) {
       return {
         backgroundColor:
-          propsContext?.bubbleProps?.selfBubbleColor ?? '#afddfa',
+          propsContext?.bubbleProps?.selfBubbleColor ?? '#c8faaf',
       };
     }
 
     return {
-      backgroundColor: propsContext?.bubbleProps?.otherBubbleColor ?? '#c8faaf',
+      backgroundColor: propsContext?.bubbleProps?.otherBubbleColor ?? '#afddfa',
     };
   }, [
     message?.me,
@@ -250,42 +251,33 @@ function _ChatBubble(props: IChatBubble) {
 
     if (message?.me) {
       return (
-        <>
-          <View style={[styles.rightArrow, bubbleBackgroundColor]}></View>
-          <View
-            style={[
-              styles.rightArrowOverlap,
-              {
-                backgroundColor:
-                  propsContext.listProps?.containerStyle?.backgroundColor ??
-                  '#fff',
-              },
-            ]}
-          ></View>
-        </>
+        <View
+          style={[
+            styles.rightArrow,
+            {
+              borderTopColor: bubbleBackgroundColor.backgroundColor,
+              borderBottomColor: bubbleBackgroundColor.backgroundColor,
+            },
+          ]}
+        ></View>
       );
     } else {
       return (
-        <>
-          <View style={[styles.leftArrow, bubbleBackgroundColor]}></View>
-          <View
-            style={[
-              styles.leftArrowOverlap,
-              {
-                backgroundColor:
-                  propsContext.listProps?.containerStyle?.backgroundColor ??
-                  '#fff',
-              },
-            ]}
-          ></View>
-        </>
+        <View
+          style={[
+            styles.leftArrow,
+            {
+              borderTopColor: bubbleBackgroundColor.backgroundColor,
+              borderBottomColor: bubbleBackgroundColor.backgroundColor,
+            },
+          ]}
+        ></View>
       );
     }
   }, [
     bubbleBackgroundColor,
     message?.me,
     propsContext.bubbleProps?.enableCornerRounding,
-    propsContext.listProps?.containerStyle?.backgroundColor,
   ]);
 
   const renderMedia = useCallback(() => {
@@ -406,10 +398,14 @@ function _ChatBubble(props: IChatBubble) {
           style={[
             bubbleBackgroundColor,
             styles.container,
+            {
+              maxWidth: width - width / 4,
+            },
             propsContext.bubbleProps?.containerStyle,
-            { padding: message?.repliedTo ? 5 : 15 },
+            { padding: message?.repliedTo ? 10 : 10 },
           ]}
         >
+          {renderCornerRounding()}
           {children ? (
             children
           ) : (
@@ -456,7 +452,6 @@ function _ChatBubble(props: IChatBubble) {
               )}
             </>
           )}
-          {renderCornerRounding()}
         </View>
       </ContextMenuWrapper>
 
@@ -485,43 +480,47 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   container: {
-    margin: 20,
-    maxWidth: Dimensions.get('screen').width - 120,
-    borderRadius: 10,
+    minWidth: 60,
+    marginHorizontal: 20,
+    marginVertical: 1,
+    borderRadius: 6,
   },
   rightArrow: {
     position: 'absolute',
-    width: 20,
-    height: 25,
-    bottom: 0,
-    borderBottomLeftRadius: 25,
-    right: -7,
-  },
-  rightArrowOverlap: {
-    position: 'absolute',
-    width: 20,
-    height: 35,
-    bottom: -6,
-    borderBottomLeftRadius: 18,
-    right: -20,
+    width: 0,
+    height: 0,
+    top: 0,
+    right: -8,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderTopWidth: 16,
+    borderLeftWidth: 16,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopColor: 'red',
+    borderBottomColor: 'red',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    transform: 'rotateZ(-90deg)',
   },
   leftArrow: {
     position: 'absolute',
-    width: 20,
-    height: 25,
-    bottom: 0,
-    borderBottomRightRadius: 25,
-    left: -10,
+    width: 0,
+    height: 0,
+    top: 0,
+    left: -8,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderTopWidth: 16,
+    borderLeftWidth: 16,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopColor: 'red',
+    borderBottomColor: 'red',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
   },
 
-  leftArrowOverlap: {
-    position: 'absolute',
-    width: 20,
-    height: 35,
-    bottom: -6,
-    borderBottomRightRadius: 18,
-    left: -20,
-  },
   date: {
     color: '#a8a8a8',
     fontSize: 11,
@@ -535,7 +534,6 @@ export const styles = StyleSheet.create({
   bubbleFooter: {
     justifyContent: 'flex-end',
     flexDirection: 'row',
-    marginTop: 5,
   },
   moreMedia: {
     width: 100,
