@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
+import type ContextMenuViewType from 'react-native-context-menu-view';
 
-let contextMenuView: any;
+let contextMenuView: typeof ContextMenuViewType;
 
 try {
   if (Platform.OS === 'ios' && parseInt(Platform.Version, 10) >= 13) {

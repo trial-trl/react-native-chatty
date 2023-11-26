@@ -1,4 +1,4 @@
-import type { ViewSource } from '@muhammedkpln/react-native-image-viewing/dist/ImageViewing';
+import type { ViewSource } from '@trial-trl/react-native-image-viewing/dist/ImageViewing';
 import React, { useCallback } from 'react';
 import { videoRef } from '../utils/videoRenderer';
 import { PhotoView as _PhotoView } from '../utils/photoView';
@@ -29,6 +29,7 @@ export const PhotoView = (props: IProps) => {
     return (
       <_PhotoView
         {...props}
+        imageIndex={0}
         onRequestClose={_onRequestClose}
         onImageIndexChange={_onImageIndexChange}
         swipeToCloseEnabled

@@ -1,6 +1,7 @@
+import type ReactNativeParsedText from 'react-native-parsed-text';
 import type { IPatternShape } from 'src/types/Chatty.types';
 
-export function loadParsedText() {
+export function loadParsedText(): typeof ReactNativeParsedText | undefined {
   try {
     const ReactNativeParsedText = require('react-native-parsed-text').default;
 

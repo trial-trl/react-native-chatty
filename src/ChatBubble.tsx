@@ -1,4 +1,4 @@
-import type { ViewSource } from '@muhammedkpln/react-native-image-viewing/dist/ImageViewing';
+import type { ViewSource } from '@trial-trl/react-native-image-viewing/dist/ImageViewing';
 import dayjs from 'dayjs';
 import React, {
   useCallback,

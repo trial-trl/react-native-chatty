@@ -1,6 +1,6 @@
 import React, { Ref, useContext, useImperativeHandle, useState } from 'react';
 import { Text } from 'react-native';
-import type { ITypingStatusRef } from 'src/types/Chatty.types';
+import type { ITypingStatusRef } from '../types/Chatty.types';
 import { ChatBubble } from '../ChatBubble';
 import { PropsContext } from '../Chatty';
 import { loadLottie } from '../utils/lottie';
@@ -49,7 +49,7 @@ function _TypingStatus(_: any, ref: Ref<ITypingStatusRef>) {
       return propsContext.renderTypingBubble();
     }
 
-    return <Text>Typing...</Text>;
+    return <Text>...</Text>;
   }
 }
 
