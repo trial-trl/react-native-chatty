@@ -44,6 +44,7 @@ export interface IChatty {
   enableUrlPreviews?: boolean;
   patternProps?: IPatternProps;
   onReply?: (message: IMessage) => void;
+  onCancelReply?: () => void;
   renderFooter?: (props?: IFooterProps) => JSX.Element;
   renderHeader?: (props?: IChatHeaderProps) => JSX.Element;
   renderBubble?: (props?: IMessage) => JSX.Element;
@@ -84,7 +85,7 @@ export interface IShowAvatarProps {
 
 export interface ISwipeableBubble
   extends IChatBubble,
-    Pick<IChatty, 'onReply'> {
+    Pick<IChatty, 'onReply' | 'onCancelReply'> {
   children?: JSX.Element;
 }
 

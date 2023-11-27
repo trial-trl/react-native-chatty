@@ -258,6 +258,9 @@ export default function App() {
           onReply={(message) => {
             setReplying(message);
           }}
+          onCancelReply={() => {
+            setReplying(null);
+          }}
           replyingTo={replying ?? undefined}
           headerProps={{
             user: {
@@ -266,11 +269,9 @@ export default function App() {
               avatar: { uri: 'https://i.pravatar.cc/300' },
             },
           }}
-          renderTypingBubble={(props) => (
+          renderTypingBubble={() => (
             <View>
-              <Text>texting babocan</Text>
-              {/* //@ts-ignore */}
-              {props?.typingAnimation}
+              <Text>...</Text>
             </View>
           )}
         />

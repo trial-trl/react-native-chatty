@@ -216,7 +216,11 @@ in the current messages. If it is, then it will not scroll to the bottom. */
               )}
 
               <Animated.View entering={FadeInDown} exiting={FadeOutUp}>
-                <SwipeableBubble message={data} onReply={propsContext.onReply}>
+                <SwipeableBubble
+                  message={data}
+                  onReply={propsContext.onReply}
+                  onCancelReply={propsContext.onCancelReply}
+                >
                   {rowRendererProp(data)}
                 </SwipeableBubble>
               </Animated.View>
@@ -238,6 +242,7 @@ in the current messages. If it is, then it will not scroll to the bottom. */
                   <SwipeableBubble
                     message={data}
                     onReply={propsContext.onReply}
+                    onCancelReply={propsContext.onCancelReply}
                   />
                 </>
               ) : (
@@ -247,7 +252,12 @@ in the current messages. If it is, then it will not scroll to the bottom. */
           </View>
         );
       },
-      [propsContext.onReply, propsContext.renderDateProps, rowRendererProp]
+      [
+        propsContext.onReply,
+        propsContext.onCancelReply,
+        propsContext.renderDateProps,
+        rowRendererProp,
+      ]
     );
 
     const rowRenderer = useCallback(
