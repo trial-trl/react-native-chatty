@@ -69,6 +69,9 @@ export const List = React.forwardRef(
     const { trigger } = useHaptic();
     const fabRef = useRef<IFabRef>(null);
     const typingStatusRef = useRef<ITypingStatusRef>(null);
+    const offsetY = useRef(0);
+    const scrollContentHeight = useRef(0);
+    const scrollHeight = useRef(0);
     const listHeight = useMemo(
       () => windowDimensions.height - 150 - safeArea.bottom - safeArea.top,
       [windowDimensions, safeArea]
@@ -81,6 +84,7 @@ export const List = React.forwardRef(
       shouldScrollAfterOnStartReached,
       setShouldScrollAfterOnStartReached,
     ] = useState(false);
+    const [scrollLocked, setScrollLocked] = useState(true);
 
     const { rowRenderer: rowRendererProp, data } = props;
 
@@ -108,6 +112,10 @@ to the replied message. */
         ChatBubbleEmitter.removeAllListeners();
       };
     }, [messages]);
+
+    const scrollToBottom = useCallback((props?: { animated: boolean }) => {
+      flashListRef.current?.scrollToEnd({ animated: props?.animated ?? true });
+    }, []);
 
     /* Using the useImperativeHandle hook to expose a function to the parent component that will allow
     it to manipulate the messages list. */
@@ -147,14 +155,14 @@ to the replied message. */
         /* Setting the typing status of the user. */
         setIsTyping: (typing?: boolean) => {
           typingStatusRef.current?.setIsTyping(typing ?? false);
-          flashListRef.current?.scrollToEnd({ animated: true });
+          scrollToBottom();
         },
         /* Removing a message from the list of messages. */
         removeMessage: (id: number) => {
           setMessages(messages.filter((message) => message.id !== id));
         },
       }),
-      [messages, propsContext.enableHapticFeedback, trigger]
+      [messages, propsContext.enableHapticFeedback, scrollToBottom, trigger]
     );
 
     /* This code is checking if the first message in the previous messages is the same as the first message
@@ -162,10 +170,10 @@ in the current messages. If it is, then it will not scroll to the bottom. */
     useEffect(() => {
       if (previousMessages && previousMessages[0]?.id === messages[0]?.id) {
         wait(100).then(() => {
-          flashListRef.current?.scrollToEnd({ animated: true });
+          scrollToBottom();
         });
       }
-    }, [ref, messages, previousMessages]);
+    }, [scrollToBottom, messages, previousMessages]);
 
     useEffect(() => {
       if (shouldScrollAfterOnStartReached === true) {
@@ -182,6 +190,15 @@ in the current messages. If it is, then it will not scroll to the bottom. */
 
       setShouldScrollAfterOnStartReached(false);
     }, [messages, previousMessages, shouldScrollAfterOnStartReached]);
+
+    useEffect(() => {
+      if (!scrollLocked) {
+        fabRef.current?.show();
+      } else {
+        fabRef.current?.hide();
+        scrollToBottom();
+      }
+    }, [scrollLocked, scrollToBottom]);
 
     const getCurrentMessage = useCallback(
       (index: number) => {
@@ -356,6 +373,9 @@ in the current messages. If it is, then it will not scroll to the bottom. */
     };
 
     const onLayout = (event: LayoutChangeEvent) => {
+      scrollHeight.current = event.nativeEvent.layout.height;
+      lockScroll();
+
       const { onStartReachedThreshold = 0.0 } = props;
 
       if (typeof props.onLayout === 'function') {
@@ -365,6 +385,11 @@ in the current messages. If it is, then it will not scroll to the bottom. */
       setScrollThresholdToReach(
         event.nativeEvent.layout.height * onStartReachedThreshold!
       );
+    };
+
+    const onContentSizeChange = (width: number, height: number) => {
+      scrollContentHeight.current = height;
+      lockScroll();
     };
 
     const onStartReached = useCallback(
@@ -433,11 +458,8 @@ in the current messages. If it is, then it will not scroll to the bottom. */
 
     const onScroll = useCallback(
       (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (e.nativeEvent.contentOffset.y <= 0) {
-          fabRef.current?.show();
-        } else {
-          fabRef.current?.hide();
-        }
+        offsetY.current = e.nativeEvent.contentOffset.y;
+        lockScroll();
 
         hasReachedStart(e);
 
@@ -448,16 +470,18 @@ in the current messages. If it is, then it will not scroll to the bottom. */
       [props, hasReachedStart]
     );
 
-    const scrollToBottom = useCallback(() => {
-      flashListRef.current?.scrollToEnd({ animated: true });
-    }, []);
+    const lockScroll = () => {
+      setScrollLocked(
+        offsetY.current >= scrollContentHeight.current - scrollHeight.current
+      );
+    };
 
     return (
       <View style={{ minWidth: 1, minHeight: 1, maxHeight: listHeight }}>
         {propsContext.showScrollToBottomButton && (
           <FAB
             ref={fabRef}
-            onPress={scrollToBottom}
+            onPress={() => scrollToBottom()}
             {...propsContext.scrollToBottomProps}
           />
         )}
@@ -480,6 +504,7 @@ in the current messages. If it is, then it will not scroll to the bottom. */
             keyboardShouldPersistTaps: 'never',
           }}
           onLayout={onLayout}
+          onContentSizeChange={onContentSizeChange}
           onScroll={onScroll}
           optimizeForInsertDeleteAnimations
           renderFooter={() => <TypingStatus ref={typingStatusRef} />}
