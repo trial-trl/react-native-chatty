@@ -310,6 +310,39 @@ function _ChatBubble(
     return null;
   }, [mediaLoaded, message, showMedia]);
 
+  const renderAvatar = useCallback(
+    (show: boolean, self: boolean) => {
+      return (
+        <>
+          {propsContext.bubbleProps?.showAvatars?.visible && show && (
+            <>
+              {withTrailingAccessory && (
+                <Image
+                  source={
+                    message?.user.avatar ??
+                    require('./assets/images/noavatar.png')
+                  }
+                  style={[self ? styles.avatarMe : styles.avatar, avatarSize]}
+                />
+              )}
+              {!withTrailingAccessory && (
+                <View
+                  style={[self ? styles.avatarMe : styles.avatar, avatarSize]}
+                />
+              )}
+            </>
+          )}
+        </>
+      );
+    },
+    [
+      avatarSize,
+      message?.user.avatar,
+      propsContext.bubbleProps?.showAvatars?.visible,
+      withTrailingAccessory,
+    ]
+  );
+
   const renderUrlPreview = useMemo(() => {
     if (showUrlPreview && urlPreviewData && !message?.repliedTo) {
       return (
@@ -333,21 +366,7 @@ function _ChatBubble(
         <View>{propsContext.bubbleProps.trailingAccessory}</View>
       )}
 
-      {propsContext.bubbleProps?.showAvatars?.visible && !message?.me && (
-        <>
-          {withTrailingAccessory && (
-            <Image
-              source={
-                message?.user.avatar ?? require('./assets/images/noavatar.png')
-              }
-              style={[styles.avatar, avatarSize]}
-            />
-          )}
-          {!withTrailingAccessory && (
-            <View style={[styles.avatar, avatarSize]} />
-          )}
-        </>
-      )}
+      {renderAvatar(!message?.me, false)}
 
       <ContextMenuWrapper message={message as IMessage}>
         <View
@@ -385,14 +404,7 @@ function _ChatBubble(
         </View>
       </ContextMenuWrapper>
 
-      {propsContext.bubbleProps?.showAvatars?.visible && message?.me && (
-        <Image
-          source={
-            message?.user.avatar ?? require('./assets/images/noavatar.png')
-          }
-          style={[styles.avatarMe, avatarSize]}
-        />
-      )}
+      {renderAvatar(message?.me ?? false, true)}
 
       {propsContext.bubbleProps?.trailingAccessory && !message?.me && (
         <View>{propsContext.bubbleProps.trailingAccessory}</View>
