@@ -10,6 +10,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
@@ -49,7 +50,8 @@ const ScrollViewWithHeader = React.forwardRef(
     return (
       <ScrollView ref={ref} {...props}>
         {propsContext?.loadEarlierProps &&
-          propsContext.loadEarlierProps.show && (
+          propsContext.loadEarlierProps.show &&
+          propsContext.loadEarlierProps.type === 'button' && (
             <LoadEarlier {...propsContext.loadEarlierProps} />
           )}
         {children}
@@ -71,6 +73,15 @@ export const List = React.forwardRef(
       () => windowDimensions.height - 150 - safeArea.bottom - safeArea.top,
       [windowDimensions, safeArea]
     );
+    const [scrollThresholdToReach, setScrollThresholdToReach] = useState(0);
+    const [previousDistanceFromStart, setPreviousDistanceFromStart] =
+      useState(0);
+    const [allowMoreEvents, setAllowMoreEvents] = useState(true);
+    const [
+      shouldScrollAfterOnStartReached,
+      setShouldScrollAfterOnStartReached,
+    ] = useState(false);
+
     const { rowRenderer: rowRendererProp, data } = props;
 
     const [messages, setMessages] = useState<IMessage[]>([]);
@@ -155,6 +166,22 @@ in the current messages. If it is, then it will not scroll to the bottom. */
         });
       }
     }, [ref, messages, previousMessages]);
+
+    useEffect(() => {
+      if (shouldScrollAfterOnStartReached === true) {
+        const indexToScrollTo =
+          messages.length - (previousMessages?.length ?? 0);
+
+        flashListRef.current?.scrollToIndex({
+          animated: false,
+          index: indexToScrollTo,
+          viewPosition: 0.0,
+          viewOffset: 0,
+        });
+      }
+
+      setShouldScrollAfterOnStartReached(false);
+    }, [messages, previousMessages, shouldScrollAfterOnStartReached]);
 
     const getCurrentMessage = useCallback(
       (index: number) => {
@@ -322,6 +349,88 @@ in the current messages. If it is, then it will not scroll to the bottom. */
       [isMessageChain, renderBubble]
     );
 
+    const SCROLL_DIRECTION = {
+      NONE: 0,
+      TOP: -1,
+      BOTTOM: 1,
+    };
+
+    const onLayout = (event: LayoutChangeEvent) => {
+      const { onStartReachedThreshold = 0.0 } = props;
+
+      if (typeof props.onLayout === 'function') {
+        props.onLayout(event);
+      }
+
+      setScrollThresholdToReach(
+        event.nativeEvent.layout.height * onStartReachedThreshold!
+      );
+    };
+
+    const onStartReached = useCallback(
+      async (
+        info = {
+          distanceFromStart: 0,
+        }
+      ) => {
+        if (
+          typeof props.onStartReached === 'function' ||
+          typeof propsContext.loadEarlierProps?.onLoadEarlier === 'function'
+        ) {
+          setAllowMoreEvents(false);
+
+          props.onStartReached?.(info);
+          await propsContext.loadEarlierProps?.onLoadEarlier?.();
+
+          setAllowMoreEvents(true);
+          setShouldScrollAfterOnStartReached(true);
+        }
+      },
+      [props, propsContext.loadEarlierProps]
+    );
+
+    const hasReachedStart = useCallback(
+      (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (
+          !propsContext.loadEarlierProps?.show ||
+          propsContext.loadEarlierProps?.type !== 'scroll'
+        )
+          return;
+
+        const {
+          nativeEvent: {
+            contentOffset: { y: distanceFromStart },
+          },
+        } = e;
+
+        const hasReachedScrollThreshold =
+          distanceFromStart <= scrollThresholdToReach;
+        const scrollDirection =
+          distanceFromStart - previousDistanceFromStart < 0
+            ? SCROLL_DIRECTION.TOP
+            : SCROLL_DIRECTION.BOTTOM;
+
+        setPreviousDistanceFromStart(distanceFromStart);
+
+        if (
+          allowMoreEvents === true &&
+          hasReachedScrollThreshold === true &&
+          scrollDirection === SCROLL_DIRECTION.TOP
+        ) {
+          onStartReached({ distanceFromStart });
+        }
+      },
+      [
+        propsContext.loadEarlierProps,
+        scrollThresholdToReach,
+        previousDistanceFromStart,
+        SCROLL_DIRECTION.TOP,
+        SCROLL_DIRECTION.BOTTOM,
+        allowMoreEvents,
+        onStartReached,
+      ]
+    );
+
     const onScroll = useCallback(
       (e: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (e.nativeEvent.contentOffset.y <= 0) {
@@ -330,11 +439,13 @@ in the current messages. If it is, then it will not scroll to the bottom. */
           fabRef.current?.hide();
         }
 
+        hasReachedStart(e);
+
         if (props.onScroll) {
           props.onScroll(e);
         }
       },
-      [props]
+      [props, hasReachedStart]
     );
 
     const scrollToBottom = useCallback(() => {
@@ -368,11 +479,13 @@ in the current messages. If it is, then it will not scroll to the bottom. */
           overrideProps={{
             keyboardShouldPersistTaps: 'never',
           }}
+          onLayout={onLayout}
           onScroll={onScroll}
           optimizeForInsertDeleteAnimations
           renderFooter={() => <TypingStatus ref={typingStatusRef} />}
           onEndReached={props?.onEndReached}
           onEndReachedThreshold={props?.onEndReachedThreshold}
+          scrollEventThrottle={1000 / 60}
         />
       </View>
     );

@@ -64,6 +64,12 @@ export const Chatty = React.forwardRef(
             ...props,
             enablePatterns:
               props.enablePatterns === true && RNParsedText !== undefined,
+            ...(props.loadEarlierProps && {
+              loadEarlierProps: {
+                ...props.loadEarlierProps,
+                type: props.loadEarlierProps.type ?? 'button',
+              },
+            }),
           }}
         >
           {props?.renderHeader ? (

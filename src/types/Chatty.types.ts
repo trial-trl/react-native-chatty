@@ -57,11 +57,13 @@ export interface IChatty {
 export interface IListProps
   extends Pick<
     FlashListProps<IMessage>,
-    'onEndReached' | 'onEndReachedThreshold' | 'onScroll'
+    'onLayout' | 'onEndReached' | 'onEndReachedThreshold' | 'onScroll'
   > {
   rowRenderer?: (data: IMessage) => JSX.Element;
   data: IMessage[];
   containerStyle?: ViewStyle;
+  onStartReached?: ((event: { distanceFromStart: 0 }) => void) | null;
+  onStartReachedThreshold?: number | null;
 }
 
 export interface IChatBubble {
@@ -136,6 +138,7 @@ export interface IReply {
 
 export interface ILoadEarlierProps {
   show: boolean;
+  type: 'scroll' | 'button';
   onLoadEarlier: () => Promise<unknown>;
   buttonContainerStyle?: ViewStyle;
   labelStyle?: TextStyle;
