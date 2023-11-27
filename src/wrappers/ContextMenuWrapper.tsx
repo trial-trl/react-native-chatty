@@ -3,7 +3,7 @@ import React, { useCallback, useContext, useMemo, useRef } from 'react';
 import { Platform, Text, View } from 'react-native';
 import { PropsContext } from '../Chatty';
 import type { IMessage } from '../types/Chatty.types';
-import { contextMenuView } from '../utils/contextMenu';
+import { ContextMenuView } from '../utils/contextMenu';
 import { ChatEmitter } from '../utils/eventEmitter';
 
 interface IProps {
@@ -30,12 +30,12 @@ function ContextMenuWrapper(props: IProps) {
 
   if (Platform.OS === 'ios' && parseInt(Platform.Version, 10) >= 13) {
     return (
-      <contextMenuView.default
+      <ContextMenuView
         actions={propsContext.bubbleProps?.actions?.options}
         onPress={(e: any) => onPress(e.nativeEvent.index)}
       >
         {props.children}
-      </contextMenuView.default>
+      </ContextMenuView>
     );
   }
   return (
