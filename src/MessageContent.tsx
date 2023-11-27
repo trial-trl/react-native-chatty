@@ -3,6 +3,7 @@ import { Text } from 'react-native';
 import { PropsContext } from './Chatty';
 import { IChatBubble } from './types/Chatty.types';
 import { ParsedText } from './parsers/ParsedText';
+import { MarkdownText } from './parsers/MarkdownText';
 
 function _MessageContent(props: IChatBubble) {
   const { message } = props;
@@ -10,9 +11,9 @@ function _MessageContent(props: IChatBubble) {
 
   return (
     <>
-      {propsContext?.enablePatterns ? (
-        <ParsedText message={message} />
-      ) : (
+      {propsContext?.enablePatterns && <ParsedText message={message} />}
+      {propsContext?.enableMarkdown && <MarkdownText message={message} />}
+      {!propsContext?.enablePatterns && !propsContext?.enableMarkdown && (
         <Text
           style={
             propsContext?.bubbleProps?.labelStyle &&

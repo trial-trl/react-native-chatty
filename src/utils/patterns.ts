@@ -11,6 +11,7 @@ export function loadParsedText(): typeof ReactNativeParsedText | undefined {
       "Couldn't load react-native-parsed-text, please install it if you want to use the pattern feature"
     );
   }
+  return undefined;
 }
 
 export const SUPPORTED_PATTERNS_SHAPES: { [key: string]: IPatternShape } = {

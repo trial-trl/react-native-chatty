@@ -42,8 +42,10 @@ export interface IChatty {
   setDateLocale?: string | ILocale;
   listProps?: Omit<IListProps, 'rowRenderer' | 'data'>;
   enablePatterns?: boolean;
+  enableMarkdown?: boolean;
   enableUrlPreviews?: boolean;
   patternProps?: IPatternProps;
+  markdownProps?: IMarkdownProps;
   onReply?: (message: IMessage) => void;
   onCancelReply?: () => void;
   renderFooter?: (props?: IFooterProps) => JSX.Element;
@@ -170,6 +172,11 @@ export interface IPatternShape {
 export interface IPatternProps {
   allowPatterns?: (keyof typeof SUPPORTED_PATTERNS_SHAPES)[];
   customPatterns?: { [key: string]: IPatternShape };
+}
+
+export interface IMarkdownProps {
+  customRules?: { [key: string]: IPatternShape };
+  customStyle?: Object;
 }
 
 export const LayoutType = {
