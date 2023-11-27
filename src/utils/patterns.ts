@@ -14,25 +14,25 @@ export function loadParsedText(): typeof ReactNativeParsedText | undefined {
   return undefined;
 }
 
-export const SUPPORTED_PATTERNS_SHAPES: { [key: string]: IPatternShape } = {
+export const SUPPORTED_PATTERNS_SHAPES = {
   hashtag: {
     pattern: /#(\w+)/,
     style: {
       color: 'cyan',
     },
-  },
+  } as IPatternShape,
   mention: {
     pattern: /\B@\w+/g,
     style: {
       color: 'orange',
     },
-  },
+  } as IPatternShape,
   url: {
     type: 'url',
     style: {
       color: 'blue',
     },
-  },
+  } as IPatternShape,
 };
 
 /**

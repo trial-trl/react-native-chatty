@@ -167,7 +167,9 @@ export interface IPatternShape {
   type?: string;
   pattern?: RegExp | string;
   style: TextStyle;
+  renderText?: (matchingString: string, matches: string[]) => string;
   onPress?: (pattern: string, index: number) => void;
+  onLongPress?: (text: string, index: number) => void;
 }
 
 export interface IPatternProps {
