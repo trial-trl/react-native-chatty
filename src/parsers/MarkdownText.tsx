@@ -100,8 +100,7 @@ export type Rules = { [key: NodeKey]: Rule };
 
 const RNMarkdownView = loadMarkdownView();
 
-function _MarkdownText(props: IChatBubble) {
-  const { message } = props;
+function _MarkdownText({ message }: Pick<IChatBubble, 'message'>) {
   const propsContext = useContext(PropsContext);
 
   return (

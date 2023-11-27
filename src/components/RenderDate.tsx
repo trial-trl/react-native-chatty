@@ -18,6 +18,7 @@ function _RenderDate(props: IRenderDateProps) {
 const styles = StyleSheet.create({
   container: {
     padding: 5,
+    marginVertical: 30,
     backgroundColor: '#ccc',
     alignSelf: 'center',
     borderRadius: 5,

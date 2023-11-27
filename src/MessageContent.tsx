@@ -5,8 +5,7 @@ import { IChatBubble } from './types/Chatty.types';
 import { ParsedText } from './parsers/ParsedText';
 import { MarkdownText } from './parsers/MarkdownText';
 
-function _MessageContent(props: IChatBubble) {
-  const { message } = props;
+function _MessageContent({ message }: Pick<IChatBubble, 'message'>) {
   const propsContext = useContext(PropsContext);
 
   return (

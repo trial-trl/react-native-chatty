@@ -34,8 +34,10 @@ import { extractUrlFromString, fetchMetaData } from './utils/helpers';
 import { ContextMenuWrapper } from './wrappers/ContextMenuWrapper';
 import { MessageContent } from './MessageContent';
 
-function _ChatBubble(props: IChatBubble) {
-  const { message, children } = props;
+function _ChatBubble(
+  props: Pick<IChatBubble, 'message' | 'withTrailingAccessory' | 'children'>
+) {
+  const { message, withTrailingAccessory, children } = props;
   const propsContext = useContext(PropsContext);
   const { width } = useWindowDimensions();
   const [mediaLoaded, setMediaLoaded] = useState<boolean>(false);
@@ -193,6 +195,8 @@ function _ChatBubble(props: IChatBubble) {
   const renderCornerRounding = useCallback(() => {
     if (propsContext.bubbleProps?.enableCornerRounding === false) return null;
 
+    if (!withTrailingAccessory) return null;
+
     if (message?.me) {
       return (
         <View
@@ -203,7 +207,7 @@ function _ChatBubble(props: IChatBubble) {
               borderBottomColor: bubbleBackgroundColor.backgroundColor,
             },
           ]}
-        ></View>
+        />
       );
     } else {
       return (
@@ -215,12 +219,13 @@ function _ChatBubble(props: IChatBubble) {
               borderBottomColor: bubbleBackgroundColor.backgroundColor,
             },
           ]}
-        ></View>
+        />
       );
     }
   }, [
     bubbleBackgroundColor,
     message?.me,
+    withTrailingAccessory,
     propsContext.bubbleProps?.enableCornerRounding,
   ]);
 
@@ -329,12 +334,19 @@ function _ChatBubble(props: IChatBubble) {
       )}
 
       {propsContext.bubbleProps?.showAvatars?.visible && !message?.me && (
-        <Image
-          source={
-            message?.user.avatar ?? require('./assets/images/noavatar.png')
-          }
-          style={[styles.avatar, avatarSize]}
-        />
+        <>
+          {withTrailingAccessory && (
+            <Image
+              source={
+                message?.user.avatar ?? require('./assets/images/noavatar.png')
+              }
+              style={[styles.avatar, avatarSize]}
+            />
+          )}
+          {!withTrailingAccessory && (
+            <View style={[styles.avatar, avatarSize]} />
+          )}
+        </>
       )}
 
       <ContextMenuWrapper message={message as IMessage}>

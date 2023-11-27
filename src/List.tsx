@@ -32,6 +32,7 @@ import { useHaptic } from './hooks/useHaptic';
 import { usePrevious } from './hooks/usePrevious';
 import {
   HapticType,
+  IBubbleRenderOptions,
   IListProps,
   IMessage,
   ITypingStatusRef,
@@ -155,9 +156,29 @@ in the current messages. If it is, then it will not scroll to the bottom. */
       }
     }, [ref, messages, previousMessages]);
 
+    const getCurrentMessage = useCallback(
+      (index: number) => {
+        if (index > messages.length - 1) return null;
+
+        const message: IMessage = messages[index];
+        return message;
+      },
+      [messages]
+    );
+
+    const getPreviousMessage = useCallback(
+      (index: number) => {
+        if (index <= 0) return null;
+
+        const prevMessage: IMessage = messages[index - 1];
+        return prevMessage;
+      },
+      [messages]
+    );
+
     const getItemType = useCallback(
       (item: IMessage, index: number) => {
-        const prevMessage: IMessage = messages[index - 1];
+        const prevMessage = getPreviousMessage(index);
 
         if (item.text.length >= 600) {
           return LayoutType.ExtremeLong;
@@ -192,7 +213,7 @@ in the current messages. If it is, then it will not scroll to the bottom. */
         if (
           (!isFirstMessage &&
             dayjs(item.createdAt).date() !==
-              dayjs(prevMessage.createdAt).date()) ||
+              dayjs(prevMessage?.createdAt).date()) ||
           isFirstMessage
         ) {
           return LayoutType.Dated;
@@ -200,11 +221,28 @@ in the current messages. If it is, then it will not scroll to the bottom. */
 
         return LayoutType.Normal;
       },
-      [messages]
+      [getPreviousMessage]
+    );
+
+    const isMessageChain = useCallback(
+      (index: number) => {
+        const currentMessage = getCurrentMessage(index);
+        const prevMessage = getPreviousMessage(index);
+
+        const type = getItemType(currentMessage!, index);
+
+        return (
+          type !== LayoutType.Dated && currentMessage?.me === prevMessage?.me
+        );
+      },
+      [getCurrentMessage, getPreviousMessage, getItemType]
     );
 
     const renderBubble = useCallback(
-      (data: IMessage, withDate?: boolean) => {
+      (
+        data: IMessage,
+        { withDate, withTrailingAccessory }: IBubbleRenderOptions
+      ) => {
         if (rowRendererProp) {
           return (
             <View>
@@ -218,6 +256,7 @@ in the current messages. If it is, then it will not scroll to the bottom. */
               <Animated.View entering={FadeInDown} exiting={FadeOutUp}>
                 <SwipeableBubble
                   message={data}
+                  withTrailingAccessory={withTrailingAccessory}
                   onReply={propsContext.onReply}
                   onCancelReply={propsContext.onCancelReply}
                 >
@@ -241,12 +280,16 @@ in the current messages. If it is, then it will not scroll to the bottom. */
                 <>
                   <SwipeableBubble
                     message={data}
+                    withTrailingAccessory={withTrailingAccessory}
                     onReply={propsContext.onReply}
                     onCancelReply={propsContext.onCancelReply}
                   />
                 </>
               ) : (
-                <ChatBubble message={data} />
+                <ChatBubble
+                  message={data}
+                  withTrailingAccessory={withTrailingAccessory}
+                />
               )}
             </Animated.View>
           </View>
@@ -268,13 +311,15 @@ in the current messages. If it is, then it will not scroll to the bottom. */
           extraData
         );
 
+        const withTrailingAccessory = !isMessageChain(index);
+
         if (type === LayoutType.Dated) {
-          return renderBubble(item, true);
+          return renderBubble(item, { withDate: true, withTrailingAccessory });
         }
 
-        return renderBubble(item);
+        return renderBubble(item, { withDate: false, withTrailingAccessory });
       },
-      [renderBubble]
+      [isMessageChain, renderBubble]
     );
 
     const onScroll = useCallback(

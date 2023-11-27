@@ -66,6 +66,7 @@ export interface IListProps
 
 export interface IChatBubble {
   message?: IMessage;
+  withTrailingAccessory?: boolean;
   containerStyle?: ViewStyle;
   selfBubbleColor?: string;
   otherBubbleColor?: string;
@@ -241,4 +242,9 @@ export interface IUrlPreviewBubble {
   image: string;
   description: string;
   url: string;
+}
+
+export interface IBubbleRenderOptions {
+  withDate?: boolean;
+  withTrailingAccessory?: boolean;
 }
