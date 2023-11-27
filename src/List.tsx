@@ -113,7 +113,7 @@ to the replied message. */
       };
     }, [messages]);
 
-    const scrollToBottom = useCallback((props?: { animated: boolean }) => {
+    const scrollToBottom = useCallback((props?: { animated?: boolean }) => {
       flashListRef.current?.scrollToEnd({ animated: props?.animated ?? true });
     }, []);
 
@@ -150,12 +150,11 @@ to the replied message. */
         },
         /* This is a function that is used to scroll to the bottom of the list. */
         scrollToEnd: (animated?: boolean) => {
-          flashListRef.current?.scrollToEnd({ animated });
+          scrollToBottom({ animated });
         },
         /* Setting the typing status of the user. */
         setIsTyping: (typing?: boolean) => {
           typingStatusRef.current?.setIsTyping(typing ?? false);
-          scrollToBottom();
         },
         /* Removing a message from the list of messages. */
         removeMessage: (id: number) => {
@@ -168,12 +167,15 @@ to the replied message. */
     /* This code is checking if the first message in the previous messages is the same as the first message
 in the current messages. If it is, then it will not scroll to the bottom. */
     useEffect(() => {
-      if (previousMessages && previousMessages[0]?.id === messages[0]?.id) {
+      if (
+        scrollLocked &&
+        (!previousMessages || previousMessages[0]?.id === messages[0]?.id)
+      ) {
         wait(100).then(() => {
           scrollToBottom();
         });
       }
-    }, [scrollToBottom, messages, previousMessages]);
+    }, [scrollToBottom, scrollLocked, messages, previousMessages]);
 
     useEffect(() => {
       if (shouldScrollAfterOnStartReached === true) {
@@ -196,9 +198,8 @@ in the current messages. If it is, then it will not scroll to the bottom. */
         fabRef.current?.show();
       } else {
         fabRef.current?.hide();
-        scrollToBottom();
       }
-    }, [scrollLocked, scrollToBottom]);
+    }, [scrollLocked]);
 
     const getCurrentMessage = useCallback(
       (index: number) => {
@@ -456,6 +457,14 @@ in the current messages. If it is, then it will not scroll to the bottom. */
       ]
     );
 
+    const lockScroll = useCallback(() => {
+      const realHeight = scrollContentHeight.current - scrollHeight.current;
+      setScrollLocked(
+        offsetY.current >=
+          realHeight - realHeight * (props?.onEndReachedThreshold ?? 0)
+      );
+    }, [props]);
+
     const onScroll = useCallback(
       (e: NativeSyntheticEvent<NativeScrollEvent>) => {
         offsetY.current = e.nativeEvent.contentOffset.y;
@@ -467,14 +476,8 @@ in the current messages. If it is, then it will not scroll to the bottom. */
           props.onScroll(e);
         }
       },
-      [props, hasReachedStart]
+      [lockScroll, hasReachedStart, props]
     );
-
-    const lockScroll = () => {
-      setScrollLocked(
-        offsetY.current >= scrollContentHeight.current - scrollHeight.current
-      );
-    };
 
     return (
       <View style={{ minWidth: 1, minHeight: 1, maxHeight: listHeight }}>
