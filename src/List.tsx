@@ -42,6 +42,7 @@ import {
 } from './types/Chatty.types';
 import { ChatBubbleEmitter } from './utils/eventEmitter';
 import { wait } from './utils/helpers';
+import { usePreviousPersistent } from './hooks/usePreviousPersistent';
 
 const ScrollViewWithHeader = React.forwardRef(
   ({ children, ...props }: ScrollViewProps, ref: Ref<ScrollView>) => {
@@ -71,6 +72,9 @@ export const List = React.forwardRef(
     const typingStatusRef = useRef<ITypingStatusRef>(null);
     const offsetY = useRef(0);
     const scrollContentHeight = useRef(0);
+    const prevScrollContentHeight = usePreviousPersistent<number>(
+      scrollContentHeight.current
+    );
     const scrollHeight = useRef(0);
     const listHeight = useMemo(
       () => windowDimensions.height - 150 - safeArea.bottom - safeArea.top,
@@ -178,20 +182,20 @@ in the current messages. If it is, then it will not scroll to the bottom. */
     }, [scrollToBottom, scrollLocked, messages, previousMessages]);
 
     useEffect(() => {
-      if (shouldScrollAfterOnStartReached === true) {
-        const indexToScrollTo =
-          messages.length - (previousMessages?.length ?? 0);
-
-        flashListRef.current?.scrollToIndex({
+      if (
+        shouldScrollAfterOnStartReached === true &&
+        (prevScrollContentHeight ?? 0) < scrollContentHeight.current
+      ) {
+        flashListRef.current?.scrollToOffset({
           animated: false,
-          index: indexToScrollTo,
-          viewPosition: 0.0,
-          viewOffset: 0,
+          offset: Math.abs(
+            scrollContentHeight.current - (prevScrollContentHeight ?? 0)
+          ),
         });
       }
 
       setShouldScrollAfterOnStartReached(false);
-    }, [messages, previousMessages, shouldScrollAfterOnStartReached]);
+    }, [prevScrollContentHeight, shouldScrollAfterOnStartReached]);
 
     useEffect(() => {
       if (!scrollLocked) {
