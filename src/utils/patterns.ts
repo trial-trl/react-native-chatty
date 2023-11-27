@@ -22,7 +22,7 @@ export const SUPPORTED_PATTERNS_SHAPES = {
     },
   } as IPatternShape,
   mention: {
-    pattern: /\B@\w+/g,
+    pattern: /\B@\w+/gm,
     style: {
       color: 'orange',
     },
@@ -32,6 +32,38 @@ export const SUPPORTED_PATTERNS_SHAPES = {
     style: {
       color: 'blue',
     },
+  } as IPatternShape,
+  bold: {
+    pattern: /\*\*(.+?)\*\*(?!\*)/gm,
+    style: {
+      fontWeight: 'bold',
+    },
+    renderText: (matchingString) =>
+      matchingString.substring(2, matchingString.length - 2),
+  } as IPatternShape,
+  italic: {
+    pattern: /\*([^*><]+)\*/gm,
+    style: {
+      fontStyle: 'italic',
+    },
+    renderText: (matchingString) =>
+      matchingString.substring(1, matchingString.length - 1),
+  } as IPatternShape,
+  underline: {
+    pattern: /\b_(?![_])(.*?[^_])_(?!\S)/gm,
+    style: {
+      textDecorationLine: 'underline',
+    },
+    renderText: (matchingString) =>
+      matchingString.substring(1, matchingString.length - 1),
+  } as IPatternShape,
+  strikethrough: {
+    pattern: /(?:)~(?![~])(.*?[^~])~(?!\b)/gm,
+    style: {
+      textDecorationLine: 'line-through',
+    },
+    renderText: (matchingString) =>
+      matchingString.substring(1, matchingString.length - 1),
   } as IPatternShape,
 };
 
