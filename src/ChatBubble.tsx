@@ -30,19 +30,9 @@ import {
   MediaType,
   MessageStatus,
 } from './types/Chatty.types';
-import { ChatEmitter } from './utils/eventEmitter';
 import { extractUrlFromString, fetchMetaData } from './utils/helpers';
-import {
-  ALL_PATERNS_SHAPES,
-  HASHTAG_PATTERN_SHAPE,
-  LoadAllPaternShapes,
-  loadParsedText,
-  MENTION_PATTERN_SHAPE,
-  URL_PATTERN_SHAPE,
-} from './utils/patterns';
 import { ContextMenuWrapper } from './wrappers/ContextMenuWrapper';
-
-const ParsedText = loadParsedText();
+import { MessageContent } from './MessageContent';
 
 function _ChatBubble(props: IChatBubble) {
   const { message, children } = props;
@@ -139,52 +129,6 @@ function _ChatBubble(props: IChatBubble) {
       });
     }
   }, [message?.media, message?.text, propsContext.enableUrlPreviews]);
-
-  const onPressPattern = useCallback(
-    (pattern: string, index: number) => {
-      if (!message) return;
-      ChatEmitter?.emit('patternPressed', pattern, index, message);
-    },
-    [message]
-  );
-
-  const messagePatterns = useMemo(() => {
-    const patterns: any[] = [];
-
-    if (!propsContext?.enablePatterns) return;
-    if (!ParsedText) return;
-
-    LoadAllPaternShapes(onPressPattern);
-
-    if (propsContext.patternProps?.customPatterns) {
-      patterns.push(...propsContext.patternProps.customPatterns);
-    }
-
-    if (propsContext?.patternProps?.allowPatterns) {
-      propsContext.patternProps.allowPatterns.forEach((pattern) => {
-        switch (pattern) {
-          case 'hashtag':
-            patterns.push(HASHTAG_PATTERN_SHAPE);
-            break;
-          case 'mention':
-            patterns.push(MENTION_PATTERN_SHAPE);
-            break;
-          case 'url':
-            patterns.push(URL_PATTERN_SHAPE);
-            break;
-        }
-      });
-    } else {
-      ALL_PATERNS_SHAPES.forEach((pattern) => patterns.push(pattern));
-    }
-
-    return patterns;
-  }, [
-    onPressPattern,
-    propsContext?.enablePatterns,
-    propsContext?.patternProps?.allowPatterns,
-    propsContext?.patternProps?.customPatterns,
-  ]);
 
   const renderTicks = useCallback(() => {
     if (message?.status) {
@@ -418,38 +362,12 @@ function _ChatBubble(props: IChatBubble) {
                 />
               )}
 
-              {propsContext?.enablePatterns && ParsedText ? (
-                <>
-                  {renderMedia()}
-
-                  <ParsedText
-                    parse={messagePatterns}
-                    style={
-                      propsContext?.bubbleProps?.labelStyle &&
-                      propsContext.bubbleProps?.labelStyle(message?.me ?? false)
-                    }
-                  >
-                    {message?.text}
-                  </ParsedText>
-                  {renderUrlPreview}
-                  {renderFooter()}
-                </>
-              ) : (
-                <View>
-                  {renderMedia()}
-
-                  <Text
-                    style={
-                      propsContext?.bubbleProps?.labelStyle &&
-                      propsContext.bubbleProps?.labelStyle(message?.me ?? false)
-                    }
-                  >
-                    {message?.text}
-                  </Text>
-                  {renderUrlPreview}
-                  {renderFooter()}
-                </View>
-              )}
+              <View>
+                {renderMedia()}
+                {renderUrlPreview}
+                <MessageContent message={message} />
+                {renderFooter()}
+              </View>
             </>
           )}
         </View>
@@ -534,16 +452,6 @@ export const styles = StyleSheet.create({
   bubbleFooter: {
     justifyContent: 'flex-end',
     flexDirection: 'row',
-  },
-  moreMedia: {
-    width: 100,
-    height: 100,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: '#ccc',
   },
   media: {
     width: 110,

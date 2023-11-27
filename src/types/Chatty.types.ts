@@ -8,6 +8,7 @@ import type {
 import type { ContextMenuAction } from 'react-native-context-menu-view';
 import type { FlashListProps } from '@shopify/flash-list';
 import Animated from 'react-native-reanimated';
+import { SUPPORTED_PATTERNS_SHAPES } from '../utils/patterns';
 
 export interface IUser {
   id: number;
@@ -167,8 +168,8 @@ export interface IPatternShape {
 }
 
 export interface IPatternProps {
-  allowPatterns?: Array<'mention' | 'hashtag' | 'url'>;
-  customPatterns?: IPatternShape[];
+  allowPatterns?: (keyof typeof SUPPORTED_PATTERNS_SHAPES)[];
+  customPatterns?: { [key: string]: IPatternShape };
 }
 
 export const LayoutType = {

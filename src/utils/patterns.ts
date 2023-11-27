@@ -1,5 +1,5 @@
 import type ReactNativeParsedText from 'react-native-parsed-text';
-import type { IPatternShape } from 'src/types/Chatty.types';
+import type { IPatternShape } from '../types/Chatty.types';
 
 export function loadParsedText(): typeof ReactNativeParsedText | undefined {
   try {
@@ -13,39 +13,35 @@ export function loadParsedText(): typeof ReactNativeParsedText | undefined {
   }
 }
 
-export const HASHTAG_PATTERN_SHAPE: IPatternShape = {
-  pattern: /#(\w+)/,
-  style: {
-    color: 'cyan',
+export const SUPPORTED_PATTERNS_SHAPES: { [key: string]: IPatternShape } = {
+  hashtag: {
+    pattern: /#(\w+)/,
+    style: {
+      color: 'cyan',
+    },
+  },
+  mention: {
+    pattern: /\B@\w+/g,
+    style: {
+      color: 'orange',
+    },
+  },
+  url: {
+    type: 'url',
+    style: {
+      color: 'blue',
+    },
   },
 };
-export const MENTION_PATTERN_SHAPE: IPatternShape = {
-  pattern: /\B@\w+/g,
-  style: {
-    color: 'orange',
-  },
-};
-export const URL_PATTERN_SHAPE: IPatternShape = {
-  type: 'url',
-  style: {
-    color: 'blue',
-  },
-};
-
-export const ALL_PATERNS_SHAPES = [
-  HASHTAG_PATTERN_SHAPE,
-  MENTION_PATTERN_SHAPE,
-  URL_PATTERN_SHAPE,
-];
 
 /**
  * Load all the patterns and set the onPress function
  * @param onPress - (pattern: string, index: number) => void
  */
-export function LoadAllPaternShapes(
+export function LoadAllPatternShapes(
   onPress: (pattern: string, index: number) => void
 ) {
-  ALL_PATERNS_SHAPES.map((pattern) => {
+  Object.values(SUPPORTED_PATTERNS_SHAPES).map((pattern) => {
     if (pattern?.onPress) return;
 
     pattern.onPress = onPress;

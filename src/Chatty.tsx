@@ -14,6 +14,9 @@ import { Footer } from './Footer';
 import { Header } from './Header';
 import { List } from './List';
 import type { IChatty, ListRef } from './types/Chatty.types';
+import { loadParsedText } from './utils/patterns';
+
+const RNParsedText = loadParsedText();
 
 export const PropsContext = React.createContext<IChatty>({} as IChatty);
 
@@ -56,7 +59,13 @@ export const Chatty = React.forwardRef(
 
     return (
       <SafeAreaView>
-        <PropsContext.Provider value={props}>
+        <PropsContext.Provider
+          value={{
+            ...props,
+            enablePatterns:
+              props.enablePatterns === true && RNParsedText !== undefined,
+          }}
+        >
           {props?.renderHeader ? (
             props.renderHeader(props.headerProps)
           ) : (
