@@ -22,6 +22,11 @@ function _FAB(_: IScrollToBottomProps, ref: Ref<IFabRef>) {
 
   if (!isVisible) return null;
 
+  if (_.render)
+    return _.render({
+      onPress: _.onPress,
+    });
+
   return (
     <TouchableOpacity
       style={_.containerStyle ?? styles.button}

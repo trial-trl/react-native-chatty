@@ -15,6 +15,7 @@ import { Header } from './Header';
 import { List } from './List';
 import type { IChatty, ListRef } from './types/Chatty.types';
 import { loadParsedText } from './utils/patterns';
+import { FetchingContextProvider } from './context/FetchingContext';
 
 const RNParsedText = loadParsedText();
 
@@ -72,44 +73,46 @@ export const Chatty = React.forwardRef(
             }),
           }}
         >
-          {props?.renderHeader ? (
-            props.renderHeader(props.headerProps)
-          ) : (
-            <Header {...props.headerProps} />
-          )}
-          <KeyboardAvoidingView
-            behavior={Platform.select({
-              android: 'position',
-              ios: 'position',
-            })}
-            keyboardVerticalOffset={Platform.select({
-              android: 20,
-            })}
-          >
-            {props.messages.length < 1 ? (
-              renderLoading()
+          <FetchingContextProvider>
+            {props?.renderHeader ? (
+              props.renderHeader(props.headerProps)
             ) : (
-              <>
-                <List
-                  data={messages}
-                  //@ts-ignore
-                  ref={ref ?? listRef}
-                  rowRenderer={
-                    props?.renderBubble ? props.renderBubble : undefined
-                  }
-                  {...props.listProps}
-                />
-                {props?.renderFooter ? (
-                  props.renderFooter(props.footerProps)
-                ) : (
-                  <Footer
-                    {...props.footerProps}
-                    replyingTo={props.replyingTo}
-                  />
-                )}
-              </>
+              <Header {...props.headerProps} />
             )}
-          </KeyboardAvoidingView>
+            <KeyboardAvoidingView
+              behavior={Platform.select({
+                android: 'position',
+                ios: 'position',
+              })}
+              keyboardVerticalOffset={Platform.select({
+                android: 20,
+              })}
+            >
+              {props.messages.length < 1 ? (
+                renderLoading()
+              ) : (
+                <FetchingContextProvider>
+                  <List
+                    data={messages}
+                    //@ts-ignore
+                    ref={ref ?? listRef}
+                    rowRenderer={
+                      props?.renderBubble ? props.renderBubble : undefined
+                    }
+                    {...props.listProps}
+                  />
+                  {props?.renderFooter ? (
+                    props.renderFooter(props.footerProps)
+                  ) : (
+                    <Footer
+                      {...props.footerProps}
+                      replyingTo={props.replyingTo}
+                    />
+                  )}
+                </FetchingContextProvider>
+              )}
+            </KeyboardAvoidingView>
+          </FetchingContextProvider>
         </PropsContext.Provider>
       </SafeAreaView>
     );

@@ -142,6 +142,8 @@ export interface ILoadEarlierProps {
   onLoadEarlier: () => Promise<unknown>;
   buttonContainerStyle?: ViewStyle;
   labelStyle?: TextStyle;
+  renderLoadingIndicator?: () => JSX.Element;
+  renderButton?: (props: Pick<TouchableOpacityProps, 'onPress'>) => JSX.Element;
 }
 
 export enum HapticType {
@@ -160,6 +162,7 @@ export interface IScrollToBottomProps
   extends Pick<TouchableOpacityProps, 'onPress'> {
   containerStyle?: ViewStyle;
   content?: JSX.Element;
+  render?: (props: Pick<TouchableOpacityProps, 'onPress'>) => JSX.Element;
 }
 
 export interface ITypingBubble {

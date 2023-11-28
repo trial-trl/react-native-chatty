@@ -1,28 +1,53 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { useCallback } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Text, TouchableOpacity } from 'react-native';
-import type { ILoadEarlierProps } from 'src/types/Chatty.types';
+import { PropsContext } from '../Chatty';
+import type { ILoadEarlierProps } from '../types/Chatty.types';
+import { useFetchingContext } from '../context/FetchingContext';
 
-function _LoadEarlier(props: ILoadEarlierProps) {
-  const { onLoadEarlier } = props;
-  const [fetchingEarlier, setFetchingEarlier] = useState(false);
+function _LoadEarlier({
+  onLoadEarlier,
+  buttonContainerStyle,
+  labelStyle,
+}: ILoadEarlierProps) {
+  const propsContext = useContext(PropsContext);
+  const [fetching, setFetching] = useFetchingContext();
 
   const onPress = useCallback(() => {
-    setFetchingEarlier(true);
+    setFetching(true);
 
-    onLoadEarlier!().finally(() => setFetchingEarlier(false));
-  }, [onLoadEarlier]);
+    onLoadEarlier!().finally(() => setFetching(false));
+  }, [onLoadEarlier, setFetching]);
+
+  const loadingIndicator = useCallback(() => {
+    if (!fetching) return null;
+
+    if (propsContext.loadEarlierProps?.renderLoadingIndicator)
+      return propsContext.loadEarlierProps?.renderLoadingIndicator();
+
+    return <ActivityIndicator />;
+  }, [fetching, propsContext.loadEarlierProps]);
+
+  if (propsContext.loadEarlierProps?.type !== 'button')
+    return loadingIndicator();
+
+  if (fetching) return loadingIndicator();
+
+  if (propsContext.loadEarlierProps?.renderButton)
+    return propsContext.loadEarlierProps?.renderButton({
+      onPress,
+    });
 
   return (
     <TouchableOpacity
       onPress={onPress}
       style={
-        props?.buttonContainerStyle
-          ? props.buttonContainerStyle
+        buttonContainerStyle
+          ? buttonContainerStyle
           : {
               padding: 10,
-              backgroundColor: !fetchingEarlier ? '#eb8334' : undefined,
+              backgroundColor: !fetching ? '#eb8334' : undefined,
               maxWidth: 100,
               margin: 10,
               borderRadius: 10,
@@ -30,8 +55,8 @@ function _LoadEarlier(props: ILoadEarlierProps) {
             }
       }
     >
-      <Text style={props?.labelStyle ? props.labelStyle : { color: '#fff' }}>
-        {fetchingEarlier ? <ActivityIndicator /> : 'Load Earlier'}
+      <Text style={labelStyle ? labelStyle : { color: '#fff' }}>
+        Load Earlier
       </Text>
     </TouchableOpacity>
   );

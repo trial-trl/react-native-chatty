@@ -43,6 +43,7 @@ import {
 import { ChatBubbleEmitter } from './utils/eventEmitter';
 import { wait } from './utils/helpers';
 import { usePreviousPersistent } from './hooks/usePreviousPersistent';
+import { useFetchingContext } from './context/FetchingContext';
 
 const ScrollViewWithHeader = React.forwardRef(
   ({ children, ...props }: ScrollViewProps, ref: Ref<ScrollView>) => {
@@ -51,8 +52,7 @@ const ScrollViewWithHeader = React.forwardRef(
     return (
       <ScrollView ref={ref} {...props}>
         {propsContext?.loadEarlierProps &&
-          propsContext.loadEarlierProps.show &&
-          propsContext.loadEarlierProps.type === 'button' && (
+          propsContext.loadEarlierProps.show && (
             <LoadEarlier {...propsContext.loadEarlierProps} />
           )}
         {children}
@@ -64,6 +64,7 @@ const ScrollViewWithHeader = React.forwardRef(
 export const List = React.forwardRef(
   (props: IListProps, ref: ForwardedRef<ListRef>) => {
     const propsContext = useContext(PropsContext);
+    const [, setFetching] = useFetchingContext();
     const flashListRef = useRef<FlashList<IMessage>>();
     const windowDimensions = useWindowDimensions();
     const safeArea = useSafeAreaInsets();
@@ -392,7 +393,7 @@ in the current messages. If it is, then it will not scroll to the bottom. */
       );
     };
 
-    const onContentSizeChange = (width: number, height: number) => {
+    const onContentSizeChange = (_: number, height: number) => {
       scrollContentHeight.current = height;
       lockScroll();
     };
@@ -409,14 +410,16 @@ in the current messages. If it is, then it will not scroll to the bottom. */
         ) {
           setAllowMoreEvents(false);
 
+          setFetching(true);
           props.onStartReached?.(info);
           await propsContext.loadEarlierProps?.onLoadEarlier?.();
 
+          setFetching(false);
           setAllowMoreEvents(true);
           setShouldScrollAfterOnStartReached(true);
         }
       },
-      [props, propsContext.loadEarlierProps]
+      [props, propsContext.loadEarlierProps, setFetching]
     );
 
     const hasReachedStart = useCallback(
