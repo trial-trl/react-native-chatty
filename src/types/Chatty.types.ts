@@ -38,6 +38,7 @@ export interface IChatty {
     IQuickRepliesProps,
     'currentMessage' | 'nextMessage'
   >;
+  mentionsProps?: Omit<IMentionsProps, 'setMessage'>;
   loadEarlierProps?: ILoadEarlierProps;
   enableHapticFeedback?: boolean;
   enableImageUploads?: boolean;
@@ -125,11 +126,17 @@ export interface IFooterProps extends Pick<IChatty, 'replyingTo'> {
     labelStyle?: TextStyle;
     usernameStyle?: TextStyle;
   };
-  mentionStyles?: {
+  mentionStyles?: IMentionsProps['styles'];
+  renderImageAction?: (props: { onPressImage: () => void }) => JSX.Element;
+}
+
+export interface IMentionsProps {
+  loadMentions: (text: string) => Promise<string[]>;
+  setMessage: (fn: (prevState: string) => string) => void;
+  styles?: {
     containerStyle?: StyleProp<Animated.AnimateStyle<StyleProp<ViewStyle>>>;
     labelStyle?: TextStyle;
   };
-  renderImageAction?: (props: { onPressImage: () => void }) => JSX.Element;
 }
 
 export interface ListRef {

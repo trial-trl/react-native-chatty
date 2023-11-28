@@ -12,13 +12,23 @@ import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { PropsContext } from './Chatty';
 import { IFooterProps, IMedia, MediaType } from './types/Chatty.types';
 import { selectImage } from './utils/imagePicker';
+import { useMentions } from './useMentions';
 
 function _Footer(props: IFooterProps) {
   const propsContext = useContext(PropsContext);
+
   const [message, setMessage] = useState<string>('');
-  const [mentions] = useState(['JohnDoe']);
-  const [foundedMentions, setFoundedMentions] = useState<string[]>([]);
   const [image, setImage] = useState<IMedia[] | undefined>();
+
+  const mentions = useMentions(
+    propsContext.mentionsProps
+      ? {
+          loadMentions: propsContext.mentionsProps!.loadMentions!,
+          setMessage,
+          styles: props.mentionStyles,
+        }
+      : undefined
+  );
 
   const cuttedText = useMemo(() => {
     if (props.replyingTo) {
@@ -30,25 +40,7 @@ function _Footer(props: IFooterProps) {
 
   const onChangeText = useCallback(
     (text: string) => {
-      const foundedMentions: string[] = [];
-
-      // Iterate over all text
-      text.split(' ').forEach((word) => {
-        foundedMentions.push(
-          // Check and push if word exists in mentions
-          ...mentions.filter((mention) => {
-            console.log(text, mention.indexOf(word));
-            return (
-              mention
-                .toLowerCase()
-                .indexOf(word.toLowerCase().replace('@', '')) != -1
-            );
-          })
-        );
-      });
-
-      setFoundedMentions(foundedMentions);
-
+      mentions.onChangeText(text);
       props.onChangeText(text);
       setMessage(text);
     },
@@ -65,60 +57,12 @@ function _Footer(props: IFooterProps) {
     setImage([]);
   }, [message, props, image]);
 
-  const onPressMention = (target: string) => {
-    setMessage((prev) => {
-      const messagesArray = prev.split(' ');
-      const lastMessageIndex = messagesArray.length - 1;
-      const lastMessage = messagesArray[lastMessageIndex];
-
-      prev = prev.replace(lastMessage, '@' + target);
-
-      return prev;
-    });
-
-    setFoundedMentions([]);
-  };
-
-  const renderMenu = useCallback(() => {
-    if (message && foundedMentions.length > 0) {
-      const splittedWords = message.split(' ');
-
-      if (splittedWords[splittedWords.length - 1].startsWith('@')) {
-        return (
-          <Animated.View
-            entering={FadeInDown}
-            exiting={FadeOutDown}
-            style={
-              props.mentionStyles?.containerStyle ?? styles.mentionContainer
-            }
-          >
-            {foundedMentions.map((mention) => (
-              <TouchableOpacity onPress={() => onPressMention(mention)}>
-                <Text
-                  style={props.mentionStyles?.labelStyle ?? styles.mentionLabel}
-                >
-                  @{mention}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </Animated.View>
-        );
-      }
-    }
-
-    return null;
-  }, [
-    foundedMentions,
-    message,
-    props.mentionStyles?.containerStyle,
-    props.mentionStyles?.labelStyle,
-  ]);
-
-  const onKeyPress = useCallback((key: string) => {
-    if (key === ' ') {
-      setFoundedMentions([]);
-    }
-  }, []);
+  const onKeyPress = useCallback(
+    (key: string) => {
+      mentions.onKeyPress(key);
+    },
+    [mentions]
+  );
 
   const onPressImage = useCallback(async () => {
     selectImage().then((r) => {
@@ -172,7 +116,7 @@ function _Footer(props: IFooterProps) {
         </Animated.View>
       )}
 
-      {renderMenu()}
+      {mentions.renderMentionsBox(message)}
 
       <View style={[styles.container, props.containerStyle]}>
         {image && image.length > 0 && (
@@ -322,17 +266,6 @@ const styles = StyleSheet.create({
     height: 100,
     backgroundColor: 'rgba(0,0,0,0.2)',
     borderRadius: 15,
-  },
-  mentionContainer: {
-    position: 'absolute',
-    bottom: 50,
-    width: '100%',
-    padding: 10,
-    backgroundColor: '#E5EEFA',
-  },
-  mentionLabel: {
-    padding: 10,
-    color: '#1939B7',
   },
 });
 
