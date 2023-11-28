@@ -180,6 +180,7 @@
     "react-native-parsed-text": "^0.0.22",
     "react-native-reanimated": "^2.4.1",
     "react-native-safe-area-context": "^4.7.4",
-    "typed-emitter": "^2.1.0"
+    "typed-emitter": "^2.1.0",
+    "use-memo-one": "^1.1.3"
   }
 }

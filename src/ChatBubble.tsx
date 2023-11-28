@@ -33,11 +33,19 @@ import {
 import { extractUrlFromString, fetchMetaData } from './utils/helpers';
 import { ContextMenuWrapper } from './wrappers/ContextMenuWrapper';
 import { MessageContent } from './MessageContent';
+import { QuickReplies } from './components/QuickReplies';
 
 function _ChatBubble(
-  props: Pick<IChatBubble, 'message' | 'withTrailingAccessory' | 'children'>
+  props: Pick<
+    IChatBubble,
+    | 'message'
+    | 'nextMessage'
+    | 'previousMessage'
+    | 'withTrailingAccessory'
+    | 'children'
+  >
 ) {
-  const { message, withTrailingAccessory, children } = props;
+  const { message, nextMessage, withTrailingAccessory, children } = props;
   const propsContext = useContext(PropsContext);
   const { width } = useWindowDimensions();
   const [mediaLoaded, setMediaLoaded] = useState<boolean>(false);
@@ -360,6 +368,35 @@ function _ChatBubble(
     return null;
   }, [message?.repliedTo, showUrlPreview, urlPreviewData]);
 
+  const renderQuickReplies = () => {
+    if (!propsContext.quickRepliesProps) return null;
+
+    const {
+      onQuickReply,
+      renderQuickReplySend,
+      quickReplyStyle,
+      quickReplyTextStyle,
+      renderQuickReplies: render,
+    } = propsContext.quickRepliesProps;
+
+    if (message && message.quickReplies) {
+      if (render) return render(propsContext.quickRepliesProps);
+
+      return (
+        <QuickReplies
+          currentMessage={message}
+          nextMessage={nextMessage}
+          onQuickReply={onQuickReply}
+          renderQuickReplySend={renderQuickReplySend}
+          quickReplyStyle={quickReplyStyle}
+          quickReplyTextStyle={quickReplyTextStyle}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <View style={[styles.wrapper, bubbleAlignment]}>
       {propsContext.bubbleProps?.trailingAccessory && message?.me && (
@@ -401,6 +438,7 @@ function _ChatBubble(
               </View>
             </>
           )}
+          {renderQuickReplies()}
         </View>
       </ContextMenuWrapper>
 

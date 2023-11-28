@@ -226,6 +226,16 @@ in the current messages. If it is, then it will not scroll to the bottom. */
       [messages]
     );
 
+    const getNextMessage = useCallback(
+      (index: number) => {
+        if (index + 1 >= messages.length) return null;
+
+        const nextMessage: IMessage = messages[index + 1];
+        return nextMessage;
+      },
+      [messages]
+    );
+
     const getItemType = useCallback(
       (item: IMessage, index: number) => {
         const prevMessage = getPreviousMessage(index);
@@ -290,27 +300,34 @@ in the current messages. If it is, then it will not scroll to the bottom. */
 
     const renderBubble = useCallback(
       (
-        data: IMessage,
-        { withDate, withTrailingAccessory }: IBubbleRenderOptions
+        currentMessage: IMessage,
+        {
+          nextMessage,
+          previousMessage,
+          withDate,
+          withTrailingAccessory,
+        }: IBubbleRenderOptions
       ) => {
         if (rowRendererProp) {
           return (
             <View>
               {withDate && (
                 <RenderDate
-                  date={data.createdAt}
+                  date={currentMessage.createdAt}
                   {...propsContext.renderDateProps}
                 />
               )}
 
               <Animated.View entering={FadeInDown} exiting={FadeOutUp}>
                 <SwipeableBubble
-                  message={data}
+                  message={currentMessage}
+                  nextMessage={nextMessage}
+                  previousMessage={previousMessage}
                   withTrailingAccessory={withTrailingAccessory}
                   onReply={propsContext.onReply}
                   onCancelReply={propsContext.onCancelReply}
                 >
-                  {rowRendererProp(data)}
+                  {rowRendererProp(currentMessage)}
                 </SwipeableBubble>
               </Animated.View>
             </View>
@@ -321,7 +338,7 @@ in the current messages. If it is, then it will not scroll to the bottom. */
           <View style={{ width: '100%' }}>
             {withDate && (
               <RenderDate
-                date={data.createdAt}
+                date={currentMessage.createdAt}
                 {...propsContext.renderDateProps}
               />
             )}
@@ -329,7 +346,9 @@ in the current messages. If it is, then it will not scroll to the bottom. */
               {propsContext.onReply ? (
                 <>
                   <SwipeableBubble
-                    message={data}
+                    message={currentMessage}
+                    nextMessage={nextMessage ?? undefined}
+                    previousMessage={previousMessage ?? undefined}
                     withTrailingAccessory={withTrailingAccessory}
                     onReply={propsContext.onReply}
                     onCancelReply={propsContext.onCancelReply}
@@ -337,7 +356,9 @@ in the current messages. If it is, then it will not scroll to the bottom. */
                 </>
               ) : (
                 <ChatBubble
-                  message={data}
+                  message={currentMessage}
+                  nextMessage={nextMessage ?? undefined}
+                  previousMessage={previousMessage ?? undefined}
                   withTrailingAccessory={withTrailingAccessory}
                 />
               )}
@@ -364,12 +385,22 @@ in the current messages. If it is, then it will not scroll to the bottom. */
         const withTrailingAccessory = !isMessageChain(index);
 
         if (type === LayoutType.Dated) {
-          return renderBubble(item, { withDate: true, withTrailingAccessory });
+          return renderBubble(item, {
+            nextMessage: getNextMessage(index) ?? undefined,
+            previousMessage: getPreviousMessage(index) ?? undefined,
+            withDate: true,
+            withTrailingAccessory,
+          });
         }
 
-        return renderBubble(item, { withDate: false, withTrailingAccessory });
+        return renderBubble(item, {
+          nextMessage: getNextMessage(index) ?? undefined,
+          previousMessage: getPreviousMessage(index) ?? undefined,
+          withDate: false,
+          withTrailingAccessory,
+        });
       },
-      [isMessageChain, renderBubble]
+      [getNextMessage, getPreviousMessage, isMessageChain, renderBubble]
     );
 
     const SCROLL_DIRECTION = {

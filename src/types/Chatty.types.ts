@@ -25,6 +25,7 @@ export interface IMessage {
   repliedTo?: IMessage;
   status?: MessageStatus;
   media?: IMedia[];
+  quickReplies?: IQuickReplies;
 }
 
 export interface IChatty {
@@ -33,6 +34,10 @@ export interface IChatty {
   footerProps: IFooterProps;
   replyingTo?: IMessage;
   bubbleProps?: Omit<IChatBubble, 'customContent'>;
+  quickRepliesProps?: Omit<
+    IQuickRepliesProps,
+    'currentMessage' | 'nextMessage'
+  >;
   loadEarlierProps?: ILoadEarlierProps;
   enableHapticFeedback?: boolean;
   enableImageUploads?: boolean;
@@ -68,6 +73,8 @@ export interface IListProps
 
 export interface IChatBubble {
   message?: IMessage;
+  nextMessage?: IMessage;
+  previousMessage?: IMessage;
   withTrailingAccessory?: boolean;
   containerStyle?: ViewStyle;
   selfBubbleColor?: string;
@@ -253,6 +260,31 @@ export interface IUrlPreviewBubble {
 }
 
 export interface IBubbleRenderOptions {
+  nextMessage?: IMessage;
+  previousMessage?: IMessage;
   withDate?: boolean;
   withTrailingAccessory?: boolean;
+}
+
+export interface IQuickReplyOption {
+  title: string;
+  value: string;
+}
+
+export interface IQuickReplies {
+  type: 'radio' | 'checkbox';
+  values: IQuickReplyOption[];
+  keepIt?: boolean;
+}
+
+export interface IQuickRepliesProps {
+  nextMessage?: IMessage;
+  currentMessage?: IMessage;
+  color?: string;
+  sendText?: string;
+  quickReplyStyle?: StyleProp<ViewStyle>;
+  quickReplyTextStyle?: StyleProp<TextStyle>;
+  onQuickReply?(reply: (IQuickReplyOption & IReply)[]): void;
+  renderQuickReplySend?(): React.ReactNode;
+  renderQuickReplies?(props: IQuickRepliesProps): void;
 }
