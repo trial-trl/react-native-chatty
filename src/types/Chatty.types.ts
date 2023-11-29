@@ -41,7 +41,7 @@ export interface IChatty {
   mentionsProps?: Omit<IMentionsProps, 'setMessage'>;
   loadEarlierProps?: ILoadEarlierProps;
   enableHapticFeedback?: boolean;
-  enableImageUploads?: boolean;
+  enableActions?: boolean;
   renderDateProps?: Omit<IRenderDateProps, 'date'>;
   showScrollToBottomButton?: boolean;
   scrollToBottomProps?: Omit<IScrollToBottomProps, 'onPress'>;
@@ -116,7 +116,12 @@ export interface IFooterProps extends Pick<IChatty, 'replyingTo'> {
   }) => void;
   onPressCancelReply: () => void;
   closeReplyButton?: (props?: IFooterProps) => JSX.Element;
-  sendButton?: (props?: Pick<IFooterProps, 'onPressSend'>) => JSX.Element;
+  sendButton?: (props: {
+    onPressSend(
+      message: Partial<IMessage>,
+      shouldResetInputToolbar: boolean
+    ): void;
+  }) => JSX.Element;
   value?: string;
   inputStyle?: ViewStyle;
   containerStyle?: ViewStyle;
@@ -127,7 +132,6 @@ export interface IFooterProps extends Pick<IChatty, 'replyingTo'> {
     usernameStyle?: TextStyle;
   };
   mentionStyles?: IMentionsProps['styles'];
-  renderImageAction?: (props: { onPressImage: () => void }) => JSX.Element;
 }
 
 export interface IMentionsProps {

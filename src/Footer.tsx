@@ -1,18 +1,12 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import {
-  Button,
-  ImageBackground,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { PropsContext } from './Chatty';
-import { IFooterProps, IMedia, MediaType } from './types/Chatty.types';
-import { selectImage } from './utils/imagePicker';
+import { IFooterProps, IMedia, IMessage } from './types/Chatty.types';
 import { useMentions } from './useMentions';
+import { InputToolbar } from './InputToolbar';
+import { Composer } from './Composer';
+import { Send } from './Send';
 
 function _Footer(props: IFooterProps) {
   const propsContext = useContext(PropsContext);
@@ -47,15 +41,20 @@ function _Footer(props: IFooterProps) {
     [props, mentions]
   );
 
-  const onPressSend = useCallback(() => {
-    props.onPressSend({
-      text: message,
-      repliedTo: props.replyingTo,
-      media: image,
-    });
-    setMessage('');
-    setImage([]);
-  }, [message, props, image]);
+  const onPressSend = useCallback(
+    (_: Partial<IMessage>, shouldResetInputToolbar: boolean) => {
+      props.onPressSend({
+        text: message,
+        repliedTo: props.replyingTo,
+        media: image,
+      });
+      if (shouldResetInputToolbar) {
+        setMessage('');
+        setImage([]);
+      }
+    },
+    [message, props, image]
+  );
 
   const onKeyPress = useCallback(
     (key: string) => {
@@ -63,25 +62,6 @@ function _Footer(props: IFooterProps) {
     },
     [mentions]
   );
-
-  const onPressImage = useCallback(async () => {
-    selectImage().then((r) => {
-      if (r.canceled) {
-        return;
-      }
-
-      const assets = {
-        type: MediaType.Image,
-        uri: r.assets[0].uri ?? undefined,
-        base64: r.assets[0].base64 ?? undefined,
-      };
-      if (image) {
-        setImage([...image, assets]);
-      } else {
-        setImage([assets]);
-      }
-    });
-  }, [image]);
 
   return (
     <View
@@ -118,83 +98,24 @@ function _Footer(props: IFooterProps) {
 
       {mentions.renderMentionsBox(message)}
 
-      <View style={[styles.container, props.containerStyle]}>
-        {image && image.length > 0 && (
-          <ScrollView horizontal pagingEnabled>
-            {image.map((_image) => (
-              <TouchableOpacity
-                onPress={() =>
-                  setImage((prev) => prev && prev.filter((v) => v !== _image))
-                }
-                style={styles.media}
-              >
-                <ImageBackground
-                  style={[styles.mediaOverlay, { marginBottom: 15 }]}
-                  source={{ uri: _image.uri }}
-                  imageStyle={{
-                    borderRadius: 15,
-                  }}
-                >
-                  <View style={styles.media}>
-                    <View style={styles.imageClearButton}>
-                      <Text style={{ color: '#fff', textAlign: 'center' }}>
-                        x
-                      </Text>
-                    </View>
-                  </View>
-                </ImageBackground>
-              </TouchableOpacity>
-            ))}
-
-            <TouchableOpacity onPress={onPressImage}>
-              <View style={styles.addMore}>
-                <Text style={{ fontSize: 20, color: '#ccc' }}>+</Text>
-              </View>
-            </TouchableOpacity>
-          </ScrollView>
-        )}
-
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TextInput
-            value={props.value ?? message}
-            onChangeText={onChangeText}
-            style={[
-              propsContext?.enableImageUploads
-                ? styles.shortedTextInput
-                : styles.textInput,
-
-              props?.inputStyle,
-            ]}
-            placeholder={props?.placeholder ?? 'Type a message...'}
-            onKeyPress={(e) => onKeyPress(e.nativeEvent.key)}
+      <InputToolbar
+        renderComposer={() => (
+          <Composer
+            text={message}
+            onTextChanged={onChangeText}
+            onKeyPress={onKeyPress}
           />
-
-          {propsContext?.enableImageUploads && (
-            <>
-              {props?.renderImageAction ? (
-                props.renderImageAction({
-                  onPressImage,
-                })
-              ) : (
-                <TouchableOpacity
-                  onPress={onPressImage}
-                  style={{ paddingHorizontal: 10 }}
-                >
-                  <Text style={{ fontSize: 20 }}>📷</Text>
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-
-          {props?.sendButton ? (
-            props.sendButton({
-              onPressSend: onPressSend,
+        )}
+        renderSend={() =>
+          props?.sendButton ? (
+            props.sendButton!({
+              onPressSend,
             })
           ) : (
-            <Button title="Send" onPress={onPressSend} color="#0084ff" />
-          )}
-        </View>
-      </View>
+            <Send text={message} onSend={onPressSend} />
+          )
+        }
+      />
     </View>
   );
 }
