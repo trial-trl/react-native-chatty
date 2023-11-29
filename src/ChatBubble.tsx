@@ -56,14 +56,6 @@ function _ChatBubble(
     return message && dayjs(message.createdAt).format('HH:mm');
   }, [message]);
 
-  const avatarSize = useMemo(() => {
-    return {
-      width: propsContext.bubbleProps?.showAvatars?.width || 40,
-      height: propsContext.bubbleProps?.showAvatars?.width || 40,
-      borderRadius: propsContext.bubbleProps?.showAvatars?.width || 40,
-    };
-  }, [propsContext.bubbleProps?.showAvatars?.width]);
-
   const bubbleBackgroundColor = useMemo<ViewStyle>(() => {
     if (propsContext.bubbleProps?.containerStyle) {
       if (message?.me) {
@@ -318,38 +310,6 @@ function _ChatBubble(
     return null;
   }, [mediaLoaded, message, showMedia]);
 
-  const renderAvatar = useCallback(
-    (show: boolean, self: boolean) => {
-      return (
-        <>
-          {propsContext.bubbleProps?.showAvatars?.visible && show && (
-            <>
-              {withTrailingAccessory && (
-                <Image
-                  source={
-                    message?.user.avatar ??
-                    require('./assets/images/noavatar.png')
-                  }
-                  style={[self ? styles.avatarMe : styles.avatar, avatarSize]}
-                />
-              )}
-              {!withTrailingAccessory && (
-                <View
-                  style={[self ? styles.avatarMe : styles.avatar, avatarSize]}
-                />
-              )}
-            </>
-          )}
-        </>
-      );
-    },
-    [
-      avatarSize,
-      message?.user.avatar,
-      propsContext.bubbleProps?.showAvatars?.visible,
-      withTrailingAccessory,
-    ]
-  );
 
   const renderUrlPreview = useMemo(() => {
     if (showUrlPreview && urlPreviewData && !message?.repliedTo) {
