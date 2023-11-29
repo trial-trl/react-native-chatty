@@ -16,7 +16,7 @@ export default function App() {
   const listRef = useRef(null);
   const message = useRef<string>('');
   const [replying, setReplying] = React.useState<IMessage | null>(null);
-  const [messages, setMessages] = React.useState([
+  const [messages, setMessages] = React.useState<IMessage[]>([
     {
       id: 1,
       text: 'Hello',
@@ -71,6 +71,24 @@ export default function App() {
         username: 'Jane Doe',
         avatar: { uri: 'https://i.pravatar.cc/300' },
       },
+      quickReplies: {
+        type: 'radio', // or 'checkbox',
+        keepIt: true,
+        values: [
+          {
+            title: '😋 Yes',
+            value: 'yes',
+          },
+          {
+            title: '📷 Yes, let me show you with a picture!',
+            value: 'yes_picture',
+          },
+          {
+            title: '😞 Nope. What?',
+            value: 'no',
+          },
+        ],
+      },
     },
     {
       id: 4,
@@ -114,6 +132,23 @@ export default function App() {
           },
         },
       ],
+      quickReplies: {
+        type: 'checkbox', // or 'radio',
+        values: [
+          {
+            title: 'Yes',
+            value: 'yes',
+          },
+          {
+            title: 'Yes, let me show you with a picture!',
+            value: 'yes_picture',
+          },
+          {
+            title: 'Nope. What?',
+            value: 'no',
+          },
+        ],
+      },
     },
     {
       id: 6,
@@ -341,6 +376,11 @@ export default function App() {
           scrollToBottomProps={{}}
           listProps={{
             onEndReachedThreshold: 0.2,
+          }}
+          quickRepliesProps={{
+            onQuickReply(reply) {
+              console.log(reply);
+            },
           }}
           bubbleProps={{
             showAvatars: {
