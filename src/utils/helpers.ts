@@ -1,4 +1,5 @@
-import type { IUrlPreviewBubble } from '../types/Chatty.types';
+import dayjs from 'dayjs';
+import type { IMessage, IUrlPreviewBubble } from '../types/Chatty.types';
 
 /**
  * `wait` is a function that returns a promise that resolves after a given number of milliseconds
@@ -59,3 +60,33 @@ export const fetchMetaData = async (
 
   return null;
 };
+
+export function isSameDay(
+  currentMessage: IMessage,
+  diffMessage: IMessage | null | undefined
+) {
+  if (!diffMessage || !diffMessage.createdAt) {
+    return false;
+  }
+
+  const currentCreatedAt = dayjs(currentMessage.createdAt);
+  const diffCreatedAt = dayjs(diffMessage.createdAt);
+
+  if (!currentCreatedAt.isValid() || !diffCreatedAt.isValid()) {
+    return false;
+  }
+
+  return currentCreatedAt.isSame(diffCreatedAt, 'day');
+}
+
+export function isSameUser(
+  currentMessage: IMessage,
+  diffMessage: IMessage | null | undefined
+) {
+  return !!(
+    diffMessage &&
+    diffMessage.user &&
+    currentMessage.user &&
+    diffMessage.user.id === currentMessage.user.id
+  );
+}

@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import type { ForwardedRef, Ref } from 'react';
 import React, {
   useCallback,
@@ -41,7 +40,7 @@ import {
   ListRef,
 } from './types/Chatty.types';
 import { ChatBubbleEmitter } from './utils/eventEmitter';
-import { wait } from './utils/helpers';
+import { isSameDay, isSameUser, wait } from './utils/helpers';
 import { usePreviousPersistent } from './hooks/usePreviousPersistent';
 import { useFetchingContext } from './context/FetchingContext';
 
@@ -270,12 +269,7 @@ in the current messages. If it is, then it will not scroll to the bottom. */
 
         const isFirstMessage = index === 0;
 
-        if (
-          (!isFirstMessage &&
-            dayjs(item.createdAt).date() !==
-              dayjs(prevMessage?.createdAt).date()) ||
-          isFirstMessage
-        ) {
+        if (isFirstMessage || !isSameDay(item, prevMessage)) {
           return LayoutType.Dated;
         }
 
@@ -292,7 +286,7 @@ in the current messages. If it is, then it will not scroll to the bottom. */
         const type = getItemType(currentMessage!, index);
 
         return (
-          type !== LayoutType.Dated && currentMessage?.me === prevMessage?.me
+          type !== LayoutType.Dated && isSameUser(currentMessage!, prevMessage)
         );
       },
       [getCurrentMessage, getPreviousMessage, getItemType]
